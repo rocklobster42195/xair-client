@@ -1,0 +1,70 @@
+{
+    "name": "xair-client",
+    "version": "0.1.0",
+    "description": "TypeScript client for Behringer X-Air digital mixers (XR12, XR16, XR18, Midas MR18) over OSC: discovery, values, meters. No runtime dependencies.",
+    "license": "MIT",
+    "author": "Boris Kemper",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rocklobster42195/xair-client.git"
+    },
+    "homepage": "https://github.com/rocklobster42195/xair-client#readme",
+    "bugs": {
+        "url": "https://github.com/rocklobster42195/xair-client/issues"
+    },
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": {
+        "xair-client": "./dist/cli.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "sideEffects": false,
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
+    "keywords": [
+        "behringer",
+        "x-air",
+        "xair",
+        "xr12",
+        "xr16",
+        "xr18",
+        "mr18",
+        "osc",
+        "mixer",
+        "typescript"
+    ],
+    "scripts": {
+        "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+        "build": "npm run clean && tsc -p tsconfig.build.json",
+        "prepack": "npm run build",
+        "test": "vitest run",
+        "typecheck": "tsc -p tsconfig.json",
+        "lint": "eslint src test",
+        "check": "npm run build && npm run typecheck && npm test && npm run lint"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "devDependencies": {
+        "@tsconfig/node20": "^20.1.9",
+        "@types/node": "~20.19.0",
+        "eslint": "^10.6.0",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.62.1",
+        "vitest": "^4.1.10"
+    }
+}

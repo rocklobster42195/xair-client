@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.tgz
+.env
+.env.*
+.vscode/
+
+# Local assistant context and working notes (not part of the repo)
+CLAUDE.md
+notes/
+.claude/
+# Raw mixer dumps (names of the user's channels)
+fixtures/
