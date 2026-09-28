@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // npx xair-client discover [ip]          find mixers (broadcast, or ask one IP, e.g. over a VPN)
-// npx xair-client dump <ip> [out.json]   read-only snapshot of a mixer (never sends a value)
+// npx xair-client dump <ip> [out.json] [--usb]   read-only snapshot of a mixer (never sends a value);
+//                                               --usb also probes the USB stick player
 import fs from "node:fs";
 import { discover } from "./discover.js";
 import { dumpMixer } from "./dump.js";
@@ -16,9 +17,10 @@ async function main(): Promise<number> {
             return 0;
         }
         case "dump": {
-            const [host, out = "xair-dump.json"] = args;
+            const usb = args.includes("--usb");
+            const [host, out = "xair-dump.json"] = args.filter((a) => a !== "--usb");
             if (!host) return usage();
-            const dump = await dumpMixer({ host });
+            const dump = await dumpMixer({ host, usb });
             // Blobs don't belong in the JSON; the meters are already decoded
             fs.writeFileSync(out, JSON.stringify(dump, (_k, v) => (v?.type === "Buffer" ? `<blob ${v.data.length} bytes>` : v), 1));
             const total = Object.keys(dump.values).length + dump.missing.length;
@@ -31,7 +33,7 @@ async function main(): Promise<number> {
 }
 
 function usage(): number {
-    console.log("Usage:\n  xair-client discover [ip]\n  xair-client dump <ip> [out.json]");
+    console.log("Usage:\n  xair-client discover [ip]\n  xair-client dump <ip> [out.json] [--usb]");
     return 1;
 }
 

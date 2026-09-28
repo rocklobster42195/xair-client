@@ -72,6 +72,12 @@ describe("discovery", () => {
 });
 
 describe("dump", () => {
+    it("probes the USB player only when asked, still without sending values", async () => {
+        const dump = await dumpMixer({ host: "127.0.0.1", port, gapMs: 0, settleMs: 100, meterBanks: [], usb: true });
+        expect(dump.missing).toContain("/-usb/dir/001/name");
+        expect(received.filter((r) => r.includes(" "))).toEqual([]);
+    });
+
     it("only queries and requests meters, never sends a value", async () => {
         const dump = await dumpMixer({ host: "127.0.0.1", port, gapMs: 0, settleMs: 200, meterBanks: [1], meterMs: 100 });
         expect(dump.values["/ch/01/config/name"]).toBe("Test Vocals");

@@ -11,7 +11,7 @@ All notable changes to `xair-client`. The format follows [Keep a Changelog](http
 - `discover()`: finds mixers through an `/xinfo` broadcast or at a given address.
 - Meter blobs: `parseMeterBlob` and `buildMeterBlob`.
 - `LatestValueSender` for fast-changing values.
-- `dumpMixer()` and the CLI `xair-client discover | dump <ip>` (read-only).
+- `dumpMixer()` and the CLI `xair-client discover | dump <ip> [--usb]` (read-only; `--usb` probes the USB stick player).
 - `XAirMixer`:
   - value cache, `get`, `set` (throttled), `watch` and `sync`;
   - `/xremote` kept alive and an online state;

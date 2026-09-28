@@ -18,6 +18,7 @@ npm install xair-client
 npx xair-client discover               # find mixers on the local network
 npx xair-client discover 192.168.1.50  # ask one address (e.g. over a VPN, where broadcasts don't pass)
 npx xair-client dump 192.168.1.50      # read-only snapshot as JSON: names, faders, sends, links, meters
+npx xair-client dump 192.168.1.50 out.json --usb   # also probe the USB stick player (XR12/XR16)
 ```
 
 The dump only sends queries and meter requests, never a value. It is safe to run against a mixer that is in use.
