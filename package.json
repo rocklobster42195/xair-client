@@ -23,6 +23,10 @@
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
         },
+        "./emulator": {
+            "types": "./dist/emulator/index.d.ts",
+            "import": "./dist/emulator/index.js"
+        },
         "./package.json": "./package.json"
     },
     "sideEffects": false,
@@ -51,7 +55,10 @@
         "test": "vitest run",
         "typecheck": "tsc -p tsconfig.json",
         "lint": "eslint src test",
-        "check": "npm run build && npm run typecheck && npm test && npm run lint"
+        "check": "npm run build && npm run typecheck && npm test && npm run lint",
+        "release:patch": "npm run check && node tools/release.mjs patch",
+        "release:minor": "npm run check && node tools/release.mjs minor",
+        "release:major": "npm run check && node tools/release.mjs major"
     },
     "engines": {
         "node": ">=20"

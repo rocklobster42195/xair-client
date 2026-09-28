@@ -1,0 +1,38 @@
+name: Publish
+
+# Publishes to npm for a v<version> tag (see tools/release.mjs). Authenticates through npm Trusted
+# Publishing (OIDC, configured on npmjs.com for this workflow), no token; provenance is added automatically.
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing and provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      # Trusted Publishing needs npm >= 11.5.1; Node 20 ships npm 10
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+      - run: npm run check
+
+      - name: Check tag matches package version
+        run: |
+          V=$(node -p "require('./package.json').version")
+          if [ "v$V" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package version $V"; exit 1
+          fi
+
+      - name: Publish to npm
+        run: npm publish

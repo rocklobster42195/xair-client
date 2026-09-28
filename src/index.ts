@@ -5,3 +5,7 @@ export * from "./transport.js";
 export * from "./discover.js";
 export * from "./latest-sender.js";
 export * from "./dump.js";
+export * from "./fader.js";
+export * from "./models.js";
+export * from "./mixer.js";
+export * from "./strips.js";
