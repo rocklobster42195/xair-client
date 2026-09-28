@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { XAirEmulator } from "../src/emulator/index.js";
 import { XAirMixer } from "../src/mixer.js";
-import { XAirStrips } from "../src/strips.js";
+import { XAirStrips, muteReason } from "../src/strips.js";
 
 let emu: XAirEmulator;
 let mixer: XAirMixer;
@@ -88,6 +88,24 @@ describe("XAirStrips", () => {
         expect(ch1.color).toEqual({ index: 9, name: "red", inverted: true });
         expect(strips.strip({ kind: "ch", n: 4 }).linked).toBe(true);
         expect(strips.list()).toHaveLength(32);
+    });
+
+    it("knows why a channel is muted: itself, a mute group, or a DCA", async () => {
+        await mixer.connect();
+        const strips = new XAirStrips(mixer);
+        emu.change("/ch/06/grp/mute", [0b0010]); // in mute group 2
+        emu.change("/ch/07/grp/dca", [0b0001]); // in DCA 1
+        await mixer.sync(strips.addresses());
+        await until(() => mixer.cached("/ch/07/grp/dca")?.[0] === 1);
+        expect(muteReason(mixer, { kind: "ch", n: 6 })).toBeUndefined();
+        emu.change("/config/mute/2", [1]);
+        emu.change("/dca/1/on", [0]);
+        emu.change("/ch/08/mix/on", [0]);
+        await until(() => mixer.cached("/ch/08/mix/on")?.[0] === 0);
+        expect(muteReason(mixer, { kind: "ch", n: 6 })).toBe("group");
+        expect(muteReason(mixer, { kind: "ch", n: 7 })).toBe("dca");
+        expect(muteReason(mixer, { kind: "ch", n: 8 })).toBe("self");
+        expect(muteReason(mixer, { kind: "bus", n: 1 })).toBeUndefined();
     });
 
     it("sets fader in dB and mute, and tells watchers", async () => {

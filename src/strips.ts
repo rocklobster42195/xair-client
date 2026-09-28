@@ -75,7 +75,11 @@ export class XAirStrips {
             for (const a of Object.values(stripAddresses(ref))) out.add(a);
             const link = linkAddress(ref);
             if (link) out.add(link);
+            const groups = groupAddresses(ref);
+            if (groups) out.add(groups.muteGroups).add(groups.dcas);
         }
+        for (let g = 1; g <= this.mixer.model.muteGroups; g++) out.add(muteGroupAddress(g));
+        for (let d = 1; d <= this.mixer.model.dcas; d++) out.add(`/dca/${d}/on`);
         return [...out];
     }
 
@@ -169,4 +173,31 @@ export function stripId(ref: StripRef): string {
 export function parseStripId(id: string | undefined): StripRef | undefined {
     const m = /^(ch|aux|fxrtn|bus|fxsend|lr|dca):(\d+)$/.exec(id ?? "");
     return m ? { kind: m[1] as StripKind, n: Number(m[2]) } : undefined;
+}
+
+/** Why a strip is silent: its own mute, an active mute group, or a DCA that is off. */
+export type MuteReason = "self" | "group" | "dca";
+
+/** Group memberships of a channel (bitmasks; only channels have them on X-Air). */
+export function groupAddresses(ref: StripRef): { muteGroups: string; dcas: string } | undefined {
+    return ref.kind === "ch" ? { muteGroups: `${stripPath(ref)}/grp/mute`, dcas: `${stripPath(ref)}/grp/dca` } : undefined;
+}
+
+/**
+ * Why a strip is muted, or undefined if it isn't. Its own mute wins; otherwise an active mute
+ * group it belongs to, or a DCA it belongs to that is switched off.
+ */
+export function muteReason(mixer: XAirMixer, ref: StripRef): MuteReason | undefined {
+    const num = (addr: string) => {
+        const v = mixer.cached(addr)?.[0];
+        return typeof v === "number" ? v : 0;
+    };
+    if (mixer.cached(stripAddresses(ref).on)?.[0] === 0) return "self";
+    const groups = groupAddresses(ref);
+    if (!groups) return undefined;
+    const inGroups = num(groups.muteGroups);
+    for (let g = 1; g <= mixer.model.muteGroups; g++) if (inGroups & (1 << (g - 1)) && num(muteGroupAddress(g)) === 1) return "group";
+    const inDcas = num(groups.dcas);
+    for (let d = 1; d <= mixer.model.dcas; d++) if (inDcas & (1 << (d - 1)) && mixer.cached(`/dca/${d}/on`)?.[0] === 0) return "dca";
+    return undefined;
 }
