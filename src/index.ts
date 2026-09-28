@@ -9,3 +9,5 @@ export * from "./fader.js";
 export * from "./models.js";
 export * from "./mixer.js";
 export * from "./strips.js";
+export * from "./sends.js";
+export * from "./scenes.js";

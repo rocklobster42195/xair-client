@@ -51,6 +51,8 @@ mixer.on("online", (online) => console.log(online ? "mixer online" : "mixer offl
   - `get`, `set` and `watch` work for any OSC path. A value cache is filled by answers and pushes, and `sync(paths)` reads many values without flooding the mixer.
   - `subscribeMeters(bank, fn)` is reference-counted. The request is renewed every 9 s while anyone listens, before the mixer's 10-second limit, and stops when the last listener goes.
 - `XAirStrips`: channels, aux, FX returns, buses, FX sends, Main LR and DCAs, each with name, color, fader (0..1 and dB), mute and stereo link. `setDb`, `setFader`, `setMuted` and `watch` work on a strip.
+- `XAirSends`: a channel's sends to buses 1–6 and FX sends 1–4 (level in dB, tap, the target's name). X-Air has no on/off per send.
+- `XAirScenes`: mute groups (state, members, switching) and snapshots (names, the current one, `loadSnapshot(n)`; loading is not yet verified on an X-Air).
 - `faderToDb`, `dbToFader` and `formatDb`: the exact X-Air fader law, snapped to the mixer's 1024 steps.
 - `MODELS` and `modelOf`: strip counts for XR12, XR16, XR18 and MR18.
 

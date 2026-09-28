@@ -82,6 +82,14 @@ export class XAirEmulator {
                 case "/xremote":
                     this.remotes.set(key, { client: from, until: Date.now() + LEASE_MS });
                     continue;
+                case "/-snap/load": {
+                    // Like the mixer: the snapshot becomes the current one (the mix itself isn't emulated)
+                    const n = Number(m.args[0]);
+                    if (!Number.isInteger(n) || n < 1 || n > 64) continue;
+                    this.change("/-snap/index", [n]);
+                    this.change("/-snap/name", this.values.get(`/-snap/${String(n).padStart(2, "0")}/name`) ?? [""]);
+                    continue;
+                }
                 case "/meters": {
                     const bank = Number(/^\/meters\/(\d+)$/.exec(String(m.args[0] ?? ""))?.[1]);
                     if (Number.isInteger(bank)) this.meterSubs.set(`${key}#${bank}`, { client: from, bank, until: Date.now() + LEASE_MS });

@@ -19,4 +19,5 @@ All notable changes to `xair-client`. The format follows [Keep a Changelog](http
 - `XAirStrips`: every strip with name, color, fader in dB, mute and stereo link; `muteReason` tells whether a channel is muted by itself, a mute group or a DCA.
 - `meterIndices`, `stripId` and `parseStripId`.
 - The X-Air fader law (`faderToDb`, `dbToFader`, `formatDb`) and a model registry.
-- `xair-client/emulator`: a fake mixer for tests and simulators.
+- `XAirSends` (channel sends to buses and FX sends: level in dB, tap, target name) and `XAirScenes` (mute groups with members, snapshot names, loading).
+- `xair-client/emulator`: a fake mixer for tests and simulators (also loads snapshots).
