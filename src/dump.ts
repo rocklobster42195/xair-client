@@ -40,6 +40,18 @@ export function dumpPaths(): string[] {
     return paths;
 }
 
+/**
+ * Queries for the USB stick player (XR12/XR16), read-only. The X-Air addresses aren't documented;
+ * these are the ones the X32 uses plus the ones seen on an XR12 (`/-stat/tape/…`). Unanswered
+ * paths show up under `missing`, which is the point of the probe.
+ */
+export function usbPaths(files = 40): string[] {
+    const paths = ["/-stat/usbmounted", "/-stat/tape/state", "/-stat/tape/file", "/-stat/tape/etime", "/-stat/tape/rtime", "/-usb/path", "/-usb/title", "/-usb/dir/dirpos", "/-usb/dir/maxpos"];
+    for (let i = 1; i <= files; i++) paths.push(`/-usb/dir/${String(i).padStart(3, "0")}/name`, `/-usb/dir/${String(i).padStart(3, "0")}/type`);
+    paths.push("/-prefs/usbifc", "/config/routing/USB", "/rtn/aux/config/name");
+    return paths;
+}
+
 export type DumpOptions = {
     host: string;
     port?: number;
@@ -50,6 +62,8 @@ export type DumpOptions = {
     gapMs?: number;
     /** Wait for late replies after the queries (default 1500 ms). */
     settleMs?: number;
+    /** Also probe the USB stick player (usbPaths). */
+    usb?: boolean;
 };
 
 export async function dumpMixer(options: DumpOptions): Promise<Dump> {
@@ -70,7 +84,7 @@ export async function dumpMixer(options: DumpOptions): Promise<Dump> {
     });
     try {
         await transport.open();
-        const paths = dumpPaths();
+        const paths = options.usb ? [...dumpPaths(), ...usbPaths()] : dumpPaths();
         for (const p of paths) {
             await transport.send(p);
             // A 0 ms timer still waits ~15 ms on Windows, so skip it instead
