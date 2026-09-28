@@ -133,3 +133,40 @@ export function muteGroupAddress(n: number): string {
 export function snapshotAddresses(model: Model): string[] {
     return ["/-snap/index", ...Array.from({ length: model.snapshots }, (_, i) => `/-snap/${n2(i + 1)}/name`)];
 }
+
+/**
+ * Positions of a strip's values in meter bank 1 ("/meters/1", 40 values): channels 1–16, aux L/R,
+ * FX returns 1–4 L/R, buses 1–6, FX sends 1–4, main L/R, monitor L/R. One index for mono strips,
+ * two for stereo ones (aux, FX returns, main, and linked channel or bus pairs). DCAs have no meter.
+ * The order matches the XR12 dump (40 values); which value is which is still to be confirmed with
+ * a live signal.
+ */
+export function meterIndices(ref: StripRef, linked = false): number[] {
+    const pair = (first: number, n: number) => (linked ? [first + ((n - 1) & ~1), first + ((n - 1) | 1)] : [first + n - 1]);
+    switch (ref.kind) {
+        case "ch":
+            return pair(0, ref.n);
+        case "aux":
+            return [16, 17];
+        case "fxrtn":
+            return [18 + (ref.n - 1) * 2, 19 + (ref.n - 1) * 2];
+        case "bus":
+            return pair(26, ref.n);
+        case "fxsend":
+            return [32 + ref.n - 1];
+        case "lr":
+            return [36, 37];
+        case "dca":
+            return [];
+    }
+}
+
+/** "ch:3", "lr:1" ↔ StripRef, for settings. */
+export function stripId(ref: StripRef): string {
+    return `${ref.kind}:${ref.n}`;
+}
+
+export function parseStripId(id: string | undefined): StripRef | undefined {
+    const m = /^(ch|aux|fxrtn|bus|fxsend|lr|dca):(\d+)$/.exec(id ?? "");
+    return m ? { kind: m[1] as StripKind, n: Number(m[2]) } : undefined;
+}

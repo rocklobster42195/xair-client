@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dbToFader, faderToDb, formatDb, snapFader } from "../src/fader.js";
 import { modelOf, stripColor } from "../src/models.js";
-import { linkAddress, stripAddresses, stripRefs } from "../src/strips.js";
+import { linkAddress, meterIndices, parseStripId, stripAddresses, stripId, stripRefs } from "../src/strips.js";
 
 describe("fader law", () => {
     it("hits the known points of the X-Air curve", () => {
@@ -52,5 +52,25 @@ describe("models and strips", () => {
     it("names the strip colors (8–15 inverted)", () => {
         expect(stripColor(9)).toEqual({ index: 9, name: "red", inverted: true });
         expect(stripColor(99).name).toBe("off");
+    });
+});
+
+
+describe("meter indices and strip ids", () => {
+    it("finds a strip's values in meter bank 1", () => {
+        expect(meterIndices({ kind: "ch", n: 3 })).toEqual([2]);
+        expect(meterIndices({ kind: "ch", n: 4 }, true)).toEqual([2, 3]);
+        expect(meterIndices({ kind: "ch", n: 3 }, true)).toEqual([2, 3]);
+        expect(meterIndices({ kind: "aux", n: 1 })).toEqual([16, 17]);
+        expect(meterIndices({ kind: "fxrtn", n: 2 })).toEqual([20, 21]);
+        expect(meterIndices({ kind: "bus", n: 6 })).toEqual([31]);
+        expect(meterIndices({ kind: "lr", n: 1 })).toEqual([36, 37]);
+        expect(meterIndices({ kind: "dca", n: 1 })).toEqual([]);
+    });
+
+    it("turns strips into setting ids and back", () => {
+        expect(stripId({ kind: "fxrtn", n: 2 })).toBe("fxrtn:2");
+        expect(parseStripId("ch:12")).toEqual({ kind: "ch", n: 12 });
+        expect(parseStripId("nonsense")).toBeUndefined();
     });
 });
