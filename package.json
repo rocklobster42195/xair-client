@@ -16,7 +16,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
-        "xair-client": "./dist/cli.js"
+        "xair-client": "dist/cli.js"
     },
     "exports": {
         ".": {
