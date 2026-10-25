@@ -1,6 +1,6 @@
 {
     "name": "xair-client",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "TypeScript client for Behringer X-Air digital mixers (XR12, XR16, XR18, Midas MR18) over OSC: discovery, values, meters. No runtime dependencies.",
     "license": "MIT",
     "author": "Boris Kemper",

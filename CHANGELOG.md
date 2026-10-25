@@ -4,6 +4,8 @@ All notable changes to `xair-client`. The format follows [Keep a Changelog](http
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-10-25
+
 ### Added
 
 - `examples/try-it.mjs` ships with the package: a fake XR12 on localhost, the library reading its channels, a change and a meter, so it runs without a mixer. The README has the same code in "Try it without a mixer".
