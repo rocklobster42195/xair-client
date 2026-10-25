@@ -34,5 +34,11 @@ jobs:
             echo "::error::Tag ${GITHUB_REF_NAME} does not match package version $V"; exit 1
           fi
 
+      # 0.1.0 was published by hand (a package has to exist before Trusted Publishing can be set up).
       - name: Publish to npm
-        run: npm publish
+        run: |
+          V=$(node -p "require('./package.json').version")
+          if npm view "xair-client@$V" version >/dev/null 2>&1; then
+            echo "::notice::$V is already on npm, nothing to publish"; exit 0
+          fi
+          npm publish
