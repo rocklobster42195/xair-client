@@ -1,6 +1,11 @@
 # xair-client
 
-A TypeScript client for **Behringer X-Air** digital mixers (XR12, XR16, XR18) and the **Midas MR18**, over OSC on UDP. It has no runtime dependencies and runs on Node 20 or later.
+[![npm](https://img.shields.io/npm/v/xair-client?color=00ACA8)](https://www.npmjs.com/package/xair-client)
+[![CI](https://github.com/rocklobster42195/xair-client/actions/workflows/ci.yml/badge.svg)](https://github.com/rocklobster42195/xair-client/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Ko-fi](https://img.shields.io/badge/support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/rocklobster42195)
+
+A TypeScript client for **Behringer X-Air** digital mixers (XR12, XR16, XR18) and the **Midas MR18**, over OSC on UDP. It has no runtime dependencies and runs on Node 20 or later. It is the mixer side of [X-Air Controller](https://github.com/rocklobster42195/streamdeck-xair-controller), a Stream Deck plugin, and works on its own.
 
 > **Status: early (0.x).** The API may still change between minor versions.
 
@@ -11,6 +16,43 @@ This is an unofficial community package. It is not affiliated with or endorsed b
 ```sh
 npm install xair-client
 ```
+
+## Try it without a mixer
+
+The package ships a fake mixer, so you can run this right after installing, with nothing connected. Save it as `try-it.mjs` (the same file is in [`examples/`](examples/try-it.mjs)) and run `node try-it.mjs`:
+
+```js
+import { XAirMixer, XAirStrips, formatDb } from "xair-client";
+import { XAirEmulator } from "xair-client/emulator";
+
+// A fake mixer with a name on channel 1
+const emulator = new XAirEmulator({ model: "XR12", values: { "/ch/01/config/name": ["Vocals"] } });
+const port = await emulator.start();
+
+// Connect, then read the names, colors, faders and mutes of every strip
+const mixer = new XAirMixer({ host: "127.0.0.1", port });
+await mixer.connect();
+console.log("connected to", mixer.info?.name, "(" + mixer.model?.name + ")");
+
+const strips = new XAirStrips(mixer);
+await mixer.sync(strips.addresses());
+for (const s of strips.list().slice(0, 3)) console.log(s.path, JSON.stringify(s.name), formatDb(s.db), s.muted ? "muted" : "");
+
+// Be told when something changes, as if somebody moves the fader on the desk
+strips.watch({ kind: "ch", n: 1 }, (s) => console.log("channel 1 is now at", formatDb(s.db)));
+emulator.change("/ch/01/mix/fader", [0.5]);
+
+// A level meter: the emulator streams made-up levels
+const stop = mixer.subscribeMeters(1, (db) => console.log("meter of the first strip:", db[0]?.toFixed(1), "dB"));
+
+await new Promise((done) => setTimeout(done, 400));
+stop();
+mixer.close();
+emulator.stop();
+process.exit(0);
+```
+
+It prints the channel names it read, a change the fake desk made, and a few levels. For a real mixer, leave the emulator out and give the mixer's address: `new XAirMixer({ host: "192.168.1.50" })`.
 
 ## Command line
 
@@ -99,6 +141,14 @@ These are verified on an XR12 with firmware 1.18:
 - `/meters ,s "/meters/N"` works for banks 0–9. The mixer sends a frame every 50 ms for 10 seconds, then stops, so a client renews the request before that. Bank 1 holds all strips plus LR and monitor, 40 values in total.
 - Channel sends are `/ch/NN/mix/MM/level|tap|grpon`. MM 01–06 are the buses and 07–10 are FX sends 1–4.
 - There is no `/config/icon` on X-Air.
+
+## Ideas and feedback
+
+Ideas from outside are very welcome: they show what I stopped seeing on my own mixer. Please open an [issue](https://github.com/rocklobster42195/xair-client/issues) with your idea or problem. Small fixes as pull requests are welcome too; for bigger things, please start with an issue.
+
+## Support
+
+This package started as part of my own Stream Deck plugin. It is free and MIT licensed, and everyone is welcome to use it. If you like it, a coffee and a beer are always welcome: **[ko-fi.com/rocklobster42195](https://ko-fi.com/rocklobster42195)**.
 
 ## License
 
